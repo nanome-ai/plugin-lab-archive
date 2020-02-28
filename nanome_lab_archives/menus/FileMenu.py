@@ -5,8 +5,8 @@ from functools import partial
 import nanome
 import imgkit
 
-from ...IOManager import IOManager
-from ...LAClient import LAClient
+from ..IOManager import IOManager
+from ..LAClient import LAClient
 
 DIR_PATH = os.path.dirname(os.path.normpath(os.path.join(os.path.realpath(__file__), '..')))
 FILES_MENU_PATH = os.path.join(DIR_PATH, 'json', 'file.json')

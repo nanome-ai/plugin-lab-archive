@@ -11,7 +11,7 @@ from .IOManager import IOManager
 from .LAClient import LAClient
 from .menus.LoginSignup import LoginSignup
 from .menus.NotebooksMenu import NotebooksMenu
-from .menus.FileMenu.FileMenu import FileMenu
+from .menus.FileMenu import FileMenu
 from .NotebookFolderFile import Notebook
 
 class LabArchives(nanome.PluginInstance):

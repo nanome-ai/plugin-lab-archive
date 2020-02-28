@@ -1,7 +1,8 @@
 import os
 import nanome
+from nanome.util import Logs
 
-from ..LAClient import LAClient
+from ..LAClient import LAClient, Users
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 LOGIN_MENU = os.path.join(DIR_PATH, 'json', 'login.json')
@@ -69,10 +70,11 @@ class LoginSignup:
             self.signup(email, login, password, fullname, notebook_name)
 
     def login(self, login, password):
-        (err, res) = LAClient.Users.user_access_info(login, password)
+        (err, res) = Users.user_access_info(login, password)
         if err is None:
             self.__plugin.send_notification(nanome.util.enums.NotificationTypes.success, "Successfully Logged In")
         else:
+            Logs.debug(err)
             self.__plugin.send_notification(nanome.util.enums.NotificationTypes.error, "Error Logging In")
 
         if self.__login_callback is not None:

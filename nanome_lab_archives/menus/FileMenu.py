@@ -6,11 +6,11 @@ import nanome
 import imgkit
 
 from ..IOManager import IOManager
-from ..LAClient import LAClient
+from ..LAClient import LAClient, Tree, Entries
 
 DIR_PATH = os.path.dirname(os.path.normpath(os.path.join(os.path.realpath(__file__), '..')))
-FILES_MENU_PATH = os.path.join(DIR_PATH, 'json', 'file.json')
-ENTRY_TYPES_PATH = os.path.join(DIR_PATH, 'json', 'entrytypes.json')
+FILES_MENU_PATH = os.path.join(DIR_PATH, 'menus', 'json', 'file.json')
+ENTRY_TYPES_PATH = os.path.join(DIR_PATH, 'menus', 'json', 'entrytypes.json')
 
 class FileMenu:
     supported_entry_types = ['heading', 'plain text entry', 'rich text entry', 'Attachment']
@@ -35,7 +35,7 @@ class FileMenu:
     def display_file_contents(self):
         self.__menu.title = f'LA - {self.__file.name}'
         self.__scroll_view.items = []
-        (err, res) = LAClient.Tree.get_entries_for_page(self.__file.tree_id, self.__file.nbid, True)
+        (err, res) = Tree.get_entries_for_page(self.__file.tree_id, self.__file.nbid, True)
         if err is None:
             entries = res['tree-tools']['entries']['entry']
             entry = entries.pop()
@@ -67,7 +67,7 @@ class FileMenu:
         update_author = entry['last-modified-by']
         update_time = datetime.datetime.strptime(entry['updated-at']['#text'], '%Y-%m-%dT%H:%M:%SZ')
         # update_time.
-        ln_entry.find_node('label').get_content().text_value = f'{author}, {updated}'
+        ln_entry.find_node('label').get_content().text_value = f'{update_author}, {update_time}'
 
     def make_entry_heading(self, entry, ln_entry):
         entry_data = entry['entry-data']
@@ -90,25 +90,29 @@ class FileMenu:
 
     def make_entry_attachment(self, entry, ln_entry):
         if entry['attach-content-type'] == 'chemical/x-pdb':
-            attachment_name = entry['attach-file-name']
-            ln_entry.find_node('content').get_content().set_all_text(attachment_name)
-            eid = entry['eid']
-            ln_entry.find_node('content').get_content().register_pressed_callback(partial(self.download_attachment, eid, attachment_name))
+            ln_entry.find_node('content').get_content().set_all_text(entry['attach-file-name'])
+            ln_entry.find_node('content').get_content().register_pressed_callback(partial(self.download_attachment, entry))
 
     def make_entry_not_supported(self, entry, ln_entry):
         ln_entry.find_node('content').get_content().text_value = 'Entry type not yet supported'
 
-    def download_attachment(self, eid, name, button):
+    def download_attachment(self, entry, button):
         def upload(complexes):
             self.__plugin.add_to_workspace(complexes)
             self.__plugin.send_notification(nanome.util.enums.NotificationTypes.success, "Successfully imported from LabArchive")
             button.unusable = False
             self.__plugin.update_menu(self.__menu)
 
-        (err, res) = LAClient.Entries.entry_attachment(eid)
+        eid = entry['eid']
+        name = entry['attach-file-name']
+        last_modified_by = entry['last-modified-by']
+        
+        (err, res) = Entries.entry_attachment(eid)
         with open(name, 'w') as attachment:
             attachment.write(res)
         button.unusable = True
         self.__plugin.update_menu(self.__menu)
         complex = nanome.structure.Complex.io.from_pdb(path=name)
+        complex.name = name.split('.', 1)[0]
+        complex._remarks = {'Last Modified By': last_modified_by}
         self.__plugin.add_bonds([complex], upload, True)

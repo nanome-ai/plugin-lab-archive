@@ -8,7 +8,7 @@ from nanome.util import Logs
 # there we go. change other places
 # .LAClient is folder, LAClient(.py) is module, containing class LAClient
 from .IOManager import IOManager
-from .LAClient import LAClient
+from .LAClient import LAClient, Tree
 from .menus.LoginSignup import LoginSignup
 from .menus.NotebooksMenu import NotebooksMenu
 from .menus.FileMenu import FileMenu
@@ -16,7 +16,8 @@ from .NotebookFolderFile import Notebook
 
 class LabArchives(nanome.PluginInstance):
     def start(self):
-        self.__client = LAClient.LAClient("https://api.labarchives.com/api", os.path.join(os.getcwd(), '..', 'Authentication', 'plugin-lab-archives', 'credentials.txt'))
+        self.__credentials_path = os.path.normpath(os.path.join(self.plugin_files_path, 'lab-archives', 'credentials.txt'))
+        self.__client = LAClient("https://api.labarchives.com/api", self.__credentials_path)
 
         self.__menu_login = LoginSignup(self)
         self.__menu_login.register_login_callback(self.open_notebooks)
@@ -31,7 +32,7 @@ class LabArchives(nanome.PluginInstance):
             notebooks = Notebook.parse(res['users']['notebooks'])
             self.__menu_notebooks.open_menu(notebooks)
 
-            LAClient.Tree.get_tree_level(notebooks[0].nbid, 0)
+            Tree.get_tree_level(notebooks[0].nbid, 0)
         else:
             pass
 

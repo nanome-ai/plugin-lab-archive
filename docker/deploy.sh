@@ -11,5 +11,5 @@ docker run -d \
 --restart unless-stopped \
 -e ARGS="$*" \
 -e HOSTNAME=$HOST \
--v postnome-volume:/root \
+-v la-volume:/root \
 nanome-lab-archives

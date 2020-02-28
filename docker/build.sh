@@ -5,4 +5,6 @@ else
     docker volume create la-volume
 fi
 
+cp ../../credentials/lab-archives/credentials.txt ..
 docker build -f Dockerfile -t nanome-lab-archives:latest ..
+rm ../credentials.txt

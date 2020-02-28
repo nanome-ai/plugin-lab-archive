@@ -7,7 +7,7 @@ import nanome
 
 from ..IOManager import IOManager
 from ..NotebookFolderFile import Notebook, Folder, File
-from ..LAClient import LAClient
+from ..LAClient import LAClient, Tree, Entries
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 BASEPATH = os.path.normpath(os.path.join(DIR_PATH, '..'))
@@ -83,7 +83,7 @@ class NotebooksMenu():
         for notebook in notebooks:
             self.create_node(notebook, None)
             self.__default_nbid = self.__default_nbid or notebook.nbid
-            (err, res) = LAClient.Tree.get_tree_level(notebook.nbid, 0)
+            (err, res) = Tree.get_tree_level(notebook.nbid, 0)
             Notebook.update_notebook(notebook, res, notebook)
             for item in notebook.items:
                 self.create_node(item, None)
@@ -100,7 +100,7 @@ class NotebooksMenu():
             while err is not None:
                 with open(file.name, 'rb') as pdbfilecontent:
                     pid = ''
-                    (err, res) = LAClient.Entries.add_attachment(
+                    (err, res) = Entries.add_attachment(
                         f'{complex.full_name.strip(" {}")}.pdb',
                         "Uploaded by nanome-lab-archives plugin",
                         self.__default_nbid,
@@ -131,7 +131,7 @@ class NotebooksMenu():
 
         err = 'while init'
         while err is not None:
-            (err, res) = LAClient.Entries.entry_attachment(self.__download_eid, file.name)
+            (err, res) = Entries.entry_attachment(self.__download_eid, file.name)
             if res is not None: print("Received valid response...")
             time.sleep(3)
         self.__plugin.update_menu(self.__menu)

@@ -1,10 +1,12 @@
 import os
+from pathlib import Path
 from urllib.parse import quote
 import requests
 import xmltodict as xml
 import json
 
-from ..LAClient.Utils import epoch_time, get_signature
+from nanome.util import Logs
+from .Utils import epoch_time, get_signature
 
 DEBUG = [] # ['get_entries_for_page']
 
@@ -18,7 +20,10 @@ class LAClient:
 
         LAClient.baseurl = baseurl
         credPath = os.path.normpath(credential_path)
-        with open(credential_path, 'r') as credentials:
+        if not os.path.exists(os.path.dirname(credPath)):
+            os.makedirs(os.path.dirname(credPath))
+        Path(credPath).touch()
+        with open(credential_path, 'r+') as credentials:
             self.akid = credentials.readline().strip()
             self.password = credentials.readline().strip()
 
@@ -42,7 +47,7 @@ class LAClient:
         if method == 'GET':
             req = requests.get(url, params=params)
         elif method == 'POST':
-            req = requests.headers(url, headers=headers, params=params, data=data)
+            req = requests.post(url, headers=headers, params=params, data=data)
         else:
             raise TypeError(f'{method} not a valid request method')
 
